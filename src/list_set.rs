@@ -1,29 +1,40 @@
+use crate::solution::Set;
 use std::fmt::Display;
 
 pub struct ListSet<T> {
     list: Vec<T>,
 }
 
-impl<T: PartialEq + Display> ListSet<T> {
-    pub fn new() -> Self {
-        return ListSet {
-            list: Vec::<T>::new(),
-        };
-    }
+impl<T> Iterator for ListSet<T> {
+    type Item = T;
 
-    pub fn empty(&self) -> bool {
+    fn next(&mut self) -> Option<Self::Item> {
+        self.list.pop()
+    }
+}
+
+impl<T: Display + PartialEq> Set<T> for ListSet<T> {
+    fn empty(&self) -> bool {
         return self.list.is_empty();
     }
 
-    pub fn insert(&mut self, val: T) {
+    fn insert(&mut self, val: T) {
         if !self.list.contains(&val) {
             self.list.push(val);
         }
     }
 
-    pub fn print_list(&self) {
+    fn print(&self) {
         print!("[");
         self.list.iter().for_each(|entry| print!("{}, ", entry));
         print!("]");
+    }
+}
+
+impl<T> ListSet<T> {
+    pub fn new() -> Self {
+        return ListSet {
+            list: Vec::<T>::new(),
+        };
     }
 }
