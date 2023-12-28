@@ -19,7 +19,6 @@ pub fn opposites_solution<T: Clone>(
         .filter(|word| word.len() == 6)
         .for_each(|word| {
             let generated_words = possible_words(word.to_string());
-            println!("{:?}", generated_words);
             for generated_word in generated_words {
                 if set.elem(&generated_word) {
                     solution_list.push((word.to_string(), generated_word));
