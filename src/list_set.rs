@@ -29,6 +29,10 @@ impl<T: Display + PartialEq> Set<T> for ListSet<T> {
         self.list.iter().for_each(|entry| print!("{}, ", entry));
         print!("]");
     }
+
+    fn elem(&self, val: &T) -> bool {
+        self.list.contains(val)
+    }
 }
 
 impl<T> ListSet<T> {

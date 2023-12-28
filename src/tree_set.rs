@@ -1,7 +1,7 @@
 use crate::solution::Set;
 use std::{fmt::Debug, fmt::Display, rc::Rc};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Tree<T> {
     Fork(Rc<Tree<T>>, T, Rc<Tree<T>>),
     Empty,
@@ -21,7 +21,7 @@ impl<T> Iterator for TreeSet<T> {
     }
 }
 
-impl<T: PartialOrd + Copy + Display + Debug> Set<T> for TreeSet<T> {
+impl<T: PartialOrd + Display + Debug + Clone> Set<T> for TreeSet<T> {
     fn empty(&self) -> bool {
         match self.tree.as_ref() {
             Tree::Empty => true,
@@ -29,9 +29,9 @@ impl<T: PartialOrd + Copy + Display + Debug> Set<T> for TreeSet<T> {
         }
     }
     fn insert(&mut self, node: T) {
-        let new_tree = self.tree.insert(node);
-        self.tree_vec.clear();
-        self.tree_vec.push(new_tree.clone());
+        let mut new_tree_vec = self.tree_vec.clone();
+        let new_tree = self.tree.insert(node, &mut new_tree_vec);
+        self.tree_vec = new_tree_vec;
         self.tree = Rc::new(new_tree);
     }
 
@@ -39,6 +39,13 @@ impl<T: PartialOrd + Copy + Display + Debug> Set<T> for TreeSet<T> {
         self.tree.print();
         println!("");
         println!("Tree Vector: {:#?}", self.tree_vec);
+    }
+
+    fn elem(&self, val: &T) -> bool {
+        self.tree_vec.iter().fold(false, |acc, tree| match tree {
+            Tree::Fork(_, v, _) => acc || *val == *v,
+            _ => false,
+        })
     }
 }
 
@@ -51,17 +58,29 @@ impl<T> TreeSet<T> {
     }
 }
 
-impl<T: PartialOrd + Copy + Display> Tree<T> {
-    fn insert(&self, node_val: T) -> Self {
+impl<T: PartialOrd + Display + Clone> Tree<T> {
+    fn insert(&self, node_val: T, mut tree_vec: &mut Vec<Tree<T>>) -> Self {
         match self {
             Tree::Fork(lt, v, rt) => {
                 if node_val >= *v {
-                    Tree::Fork(Rc::clone(lt), *v, Rc::new(rt.insert(node_val)))
+                    Tree::Fork(
+                        Rc::clone(lt),
+                        v.clone(),
+                        Rc::new(rt.insert(node_val, &mut tree_vec)),
+                    )
                 } else {
-                    Tree::Fork(Rc::new(lt.insert(node_val)), *v, Rc::clone(rt))
+                    Tree::Fork(
+                        Rc::new(lt.insert(node_val, &mut tree_vec)),
+                        v.clone(),
+                        Rc::clone(rt),
+                    )
                 }
             }
-            Tree::Empty => Tree::Fork(Rc::new(Tree::Empty), node_val, Rc::new(Tree::Empty)),
+            Tree::Empty => {
+                let new_child = Tree::Fork(Rc::new(Tree::Empty), node_val, Rc::new(Tree::Empty));
+                tree_vec.push(new_child.clone());
+                new_child
+            }
         }
     }
 

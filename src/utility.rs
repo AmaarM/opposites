@@ -53,7 +53,9 @@ pub fn make_initial_list<T>(word: String) -> Vec<String> {
     let vowels = vec!['a', 'e', 'i', 'o', 'u', 'y'];
     let mut all_words: Vec<String> = Vec::<String>::new();
     pre_suf.iter().for_each(|(pre, suf)| {
-        let new_list = match !vowels.contains(pre.last().unwrap_or(&'z')) {
+        let new_list = match !vowels.contains(pre.last().unwrap_or(&'z'))
+            && *pre.last().unwrap_or(&'z') != 'y'
+        {
             true => {
                 let mut prefix_without_list = pre.clone();
                 prefix_without_list.pop();
@@ -77,11 +79,10 @@ pub fn make_initial_list<T>(word: String) -> Vec<String> {
     all_words
 }
 
-pub fn possible_words<T>(word: String) -> Vec<String> {
+pub fn possible_words(word: String) -> Vec<String> {
     let initial_list = make_initial_list::<String>(word);
-    println!("{:#?}", initial_list);
     initial_list
         .into_iter()
-        .filter(|word| word.len() > 6)
+        .filter(|word| word.len() == 6)
         .collect()
 }
